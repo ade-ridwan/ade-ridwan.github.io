@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Minum Obat - Dewi Maryati</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Alpine JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4;
+        }
+        .calendar-tab {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { border-color: rgba(59, 130, 246, 1); box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+            100% { border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        /* Hide elements before Alpine loads */
+        [x-cloak] { 
+            display: none !important; 
+        }
+    </style>
+</head>
+<body x-data="medicationApp()" class="text-slate-800 antialiased pb-12">
+
+    <!-- Header / Info Pasien -->
+    <header class="bg-teal-600 text-white shadow-lg">
+        <div class="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center gap-3">
+                        <i class="ph-fill ph-heartbeat text-4xl text-rose-300"></i>
+                        Jadwal Minum Obat
+                    </h1>
+                    <div class="mt-4 bg-teal-700/50 rounded-lg p-4 inline-block border border-teal-500">
+                        <p class="text-sm text-teal-100 uppercase tracking-wider font-semibold mb-1">Data Pasien</p>
+                        <p class="text-2xl font-bold text-white">DEWI MARYATI</p>
+                        <p class="text-teal-50 mt-1 flex items-center gap-2 italic">
+                            <i class="ph-fill ph-heart text-rose-300"></i> Semoga lekas sembuh dan sehat kembali
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-6 md:mt-0 text-center md:text-right bg-white/10 p-4 rounded-xl backdrop-blur-sm">
+                    <p class="text-sm text-teal-100 mb-1">Tanggal Resep</p>
+                    <p class="text-xl font-semibold flex items-center justify-center md:justify-end gap-2">
+                        <i class="ph ph-calendar-check"></i> 26 Agustus 2026
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigasi -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="flex p-1 space-x-2 bg-teal-900/10 rounded-xl">
+            <button 
+                @click="activeTab = 'jadwal'"
+                :class="{'bg-white shadow-sm text-teal-700 font-bold': activeTab === 'jadwal', 'text-slate-600 hover:bg-white/50 hover:text-teal-600': activeTab !== 'jadwal'}"
+                class="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-all">
+                <i class="ph-fill ph-calendar-list text-lg"></i>
+                Jadwal & Info Obat
+            </button>
+            <button 
+                @click="activeTab = 'catatan'"
+                :class="{'bg-white shadow-sm text-teal-700 font-bold': activeTab === 'catatan', 'text-slate-600 hover:bg-white/50 hover:text-teal-600': activeTab !== 'catatan'}"
+                class="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-all relative">
+                <i class="ph-fill ph-pencil-simple text-lg"></i>
+                Catatan Minum
+                <!-- Indikator ada log -->
+                <span x-show="logs.length > 0" class="absolute top-2 right-4 flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        
+        <!-- ============================================== -->
+        <!-- TAB 1: JADWAL & INFO OBAT                      -->
+        <!-- ============================================== -->
+        <div x-show="activeTab === 'jadwal'" x-transition.opacity.duration.300ms class="space-y-8">
+            
+            <!-- Tab Integrasi Google Calendar -->
+            <section class="bg-blue-50 border-2 border-blue-400 rounded-xl p-5 shadow-sm calendar-tab flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-start gap-4">
+                    <div class="bg-blue-100 p-3 rounded-full text-blue-600">
+                        <i class="ph-fill ph-google-logo text-3xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-blue-900 mb-1">Integrasi Google Calendar</h3>
+                        <p class="text-sm text-blue-700">Tekan tombol "Tambah ke Kalender" pada setiap waktu (Pagi/Siang/Malam) di bawah untuk memasukkan pengingat jadwal obat ke dalam ponsel pintar Anda. Pengaturan bawaan diatur selama 5 hari berturut-turut.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bagian Jadwal Harian -->
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="ph-fill ph-clock-user text-3xl text-teal-600"></i>
+                    <h2 class="text-2xl font-bold text-slate-800">Timeline Jadwal Harian</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- PAGI -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative transition hover:shadow-md">
+                        <div class="bg-amber-100 p-4 border-b border-amber-200 flex justify-between items-center">
+                            <h3 class="font-bold text-amber-800 text-lg flex items-center gap-2">
+                                <i class="ph-fill ph-sun text-2xl text-amber-500"></i> PAGI
+                            </h3>
+                            <button @click="addToCalendar('pagi')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1 transition-colors">
+                                <i class="ph-bold ph-calendar-plus"></i> Kalender
+                            </button>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">06:00</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1 pb-2">
+                                    <p class="font-semibold text-slate-800">Cefadroxyl & Omeprazole</p>
+                                    <p class="text-xs text-slate-500">1 jam sebelum makan (Cefadroxyl tiap 12 jam)</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">06:45</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1 pb-2">
+                                    <p class="font-semibold text-slate-800">Domperidone</p>
+                                    <p class="text-xs text-slate-500">15 menit sebelum makan</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 bg-slate-50 p-2 rounded border border-slate-100">
+                                <div class="text-sm font-bold text-slate-400 w-12 shrink-0">07:00</div>
+                                <div class="flex-1 flex items-center gap-2 text-slate-700 font-medium">
+                                    <i class="ph-fill ph-fork-knife text-slate-400"></i> Makan Pagi
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">07:30</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1 pb-2">
+                                    <p class="font-semibold text-slate-800">Parasetamol</p>
+                                    <p class="text-xs text-slate-500">Sesudah makan</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">09:00</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1">
+                                    <p class="font-semibold text-slate-800">Sucralfat Sirup</p>
+                                    <p class="text-xs text-slate-500">2 jam sesudah makan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SIANG -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition hover:shadow-md">
+                        <div class="bg-sky-100 p-4 border-b border-sky-200 flex justify-between items-center">
+                            <h3 class="font-bold text-sky-800 text-lg flex items-center gap-2">
+                                <i class="ph-fill ph-sun-horizon text-2xl text-sky-500"></i> SIANG
+                            </h3>
+                            <button @click="addToCalendar('siang')" class="bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1 transition-colors">
+                                <i class="ph-bold ph-calendar-plus"></i> Kalender
+                            </button>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">11:45</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1 pb-2">
+                                    <p class="font-semibold text-slate-800">Domperidone</p>
+                                    <p class="text-xs text-slate-500">15 menit sebelum makan</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 bg-slate-50 p-2 rounded border border-slate-100">
+                                <div class="text-sm font-bold text-slate-400 w-12 shrink-0">12:00</div>
+                                <div class="flex-1 flex items-center gap-2 text-slate-700 font-medium">
+                                    <i class="ph-fill ph-fork-knife text-slate-400"></i> Makan Siang
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">12:30</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1 pb-2">
+                                    <p class="font-semibold text-slate-800">Parasetamol</p>
+                                    <p class="text-xs text-slate-500">Sesudah makan</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">14:00</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1">
+                                    <p class="font-semibold text-slate-800">Sucralfat Sirup</p>
+                                    <p class="text-xs text-slate-500">2 jam sesudah makan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MALAM -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition hover:shadow-md">
+                        <div class="bg-indigo-100 p-4 border-b border-indigo-200 flex justify-between items-center">
+                            <h3 class="font-bold text-indigo-800 text-lg flex items-center gap-2">
+                                <i class="ph-fill ph-moon-stars text-2xl text-indigo-500"></i> MALAM
+                            </h3>
+                            <button @click="addToCalendar('malam')" class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1 transition-colors">
+                                <i class="ph-bold ph-calendar-plus"></i> Kalender
+                            </button>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">18:00</div>
+                                <div class="border-l-2 border-indigo-500 pl-3 flex-1 pb-2 bg-indigo-50 rounded-r-lg py-1 pr-2">
+                                    <p class="font-semibold text-slate-800">Cefadroxyl <span class="text-red-500 text-xs">(Wajib)</span></p>
+                                    <p class="text-xs text-slate-600">1 jam sebelum makan (Tepat 12 jam dari pagi)</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">18:45</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1 pb-2">
+                                    <p class="font-semibold text-slate-800">Domperidone</p>
+                                    <p class="text-xs text-slate-500">15 menit sebelum makan</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 bg-slate-50 p-2 rounded border border-slate-100">
+                                <div class="text-sm font-bold text-slate-400 w-12 shrink-0">19:00</div>
+                                <div class="flex-1 flex items-center gap-2 text-slate-700 font-medium">
+                                    <i class="ph-fill ph-fork-knife text-slate-400"></i> Makan Malam
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">19:30</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1 pb-2">
+                                    <p class="font-semibold text-slate-800">Parasetamol</p>
+                                    <p class="text-xs text-slate-500">Sesudah makan</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-sm font-bold text-teal-600 w-12 shrink-0">21:00</div>
+                                <div class="border-l-2 border-slate-200 pl-3 flex-1">
+                                    <p class="font-semibold text-slate-800">Sucralfat Sirup</p>
+                                    <p class="text-xs text-slate-500">2 jam sesudah makan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bagian Detail Obat -->
+            <section class="mt-12">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="ph-fill ph-pill text-3xl text-teal-600"></i>
+                    <h2 class="text-2xl font-bold text-slate-800">Detail & Informasi Obat</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Obat 1: Cefadroxyl -->
+                    <div class="bg-white border-2 border-red-200 rounded-2xl overflow-hidden shadow-sm">
+                        <div class="h-40 overflow-hidden relative bg-red-50 flex items-center justify-center">
+                            <img src="/assets/obat/Cefadroxyl.png" onerror="this.src='https://placehold.co/400x400/fee2e2/991b1b?text=Cefadroxyl'" alt="Cefadroxyl" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                            <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide animate-pulse">Antibiotik - Habiskan!</span>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-xl text-slate-800 mb-1">Cefadroxyl 500mg</h3>
+                            <p class="text-sm text-slate-500 mb-4">Bentuk: Kapsul (Jumlah: 10)</p>
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <p class="font-bold text-teal-700 text-lg mb-2">2 x 1 Kapsul</p>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
+                                    <li><strong>1 Jam Sebelum Makan</strong></li>
+                                    <li>Diminum setiap <strong>12 Jam</strong></li>
+                                    <li>Wajib <strong>Sampai Habis</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Obat 2: Sucralfat -->
+                    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                        <div class="h-40 overflow-hidden bg-pink-50 flex items-center justify-center">
+                            <img src="/assets/obat/sucifalfat.png" onerror="this.src='https://placehold.co/400x400/fdf2f8/9d174d?text=Sucralfat'" alt="Sucralfat" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-xl text-slate-800 mb-1">Sucralfat Syr</h3>
+                            <p class="text-sm text-slate-500 mb-4">Bentuk: Sirup (Jumlah: 1 Botol)</p>
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <p class="font-bold text-teal-700 text-lg mb-2">3 x 2 Sendok Obat</p>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
+                                    <li><strong>2 Jam Sesudah Makan</strong></li>
+                                    <li><strong>Kocok Dahulu</strong> sebelum diminum</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Obat 3: Omeprazole -->
+                    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                        <div class="h-40 overflow-hidden bg-purple-50 flex items-center justify-center">
+                            <img src="/assets/obat/omeparazole.png" onerror="this.src='https://placehold.co/400x400/faf5ff/6b21a8?text=Omeprazole'" alt="Omeprazole" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-xl text-slate-800 mb-1">Omeprazole 20mg</h3>
+                            <p class="text-sm text-slate-500 mb-4">Bentuk: Kapsul/Tablet (Jumlah: 10)</p>
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <p class="font-bold text-teal-700 text-lg mb-2">1 x 1 Kapsul</p>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
+                                    <li><strong>1 Jam Sebelum Makan</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Obat 4: Domperidone -->
+                    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                        <div class="h-40 overflow-hidden bg-blue-50 flex items-center justify-center relative">
+                            <img src="/assets/obat/domperidone.png" onerror="this.src='https://placehold.co/400x400/eff6ff/1e40af?text=Domperidone'" alt="Domperidone" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-xl text-slate-800 mb-1">Domperidone 10mg</h3>
+                            <p class="text-sm text-slate-500 mb-4">Bentuk: Tablet (Jumlah: 10)</p>
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <p class="font-bold text-teal-700 text-lg mb-2">3 x 1 Tablet</p>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
+                                    <li><strong>15 Menit Sebelum Makan</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Obat 5: Parasetamol -->
+                    <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                        <div class="h-40 overflow-hidden bg-green-50 flex items-center justify-center relative">
+                            <img src="/assets/obat/paracetamol.png" onerror="this.src='https://placehold.co/400x400/f0fdf4/166534?text=Parasetamol'" alt="Parasetamol" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-xl text-slate-800 mb-1">Parasetamol</h3>
+                            <p class="text-sm text-slate-500 mb-4">Bentuk: Tablet (Jumlah: 10)</p>
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                <p class="font-bold text-teal-700 text-lg mb-2">3 x 1 Tablet</p>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
+                                    <li><strong>Sesudah Makan</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: CATATAN MINUM OBAT                      -->
+        <!-- ============================================== -->
+        <div x-show="activeTab === 'catatan'" x-cloak x-transition.opacity.duration.300ms class="space-y-6">
+            
+            <div class="flex items-center gap-3 mb-2">
+                <i class="ph-fill ph-notebook text-3xl text-teal-600"></i>
+                <h2 class="text-2xl font-bold text-slate-800">Catat Minum Obat</h2>
+            </div>
+            <p class="text-slate-600 text-sm mb-6">Tandai obat yang sudah Anda minum agar tidak lupa. Data ini tersimpan di perangkat Anda (Browser).</p>
+
+            <!-- Form Tambah Catatan -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="ph-fill" :class="isEditing ? 'ph-pencil-simple text-blue-500' : 'ph-plus-circle text-teal-500'"></i>
+                    <span x-text="isEditing ? 'Edit Catatan' : 'Form Pencatatan'"></span>
+                </h3>
+                
+                <form @submit.prevent="saveRecord" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="md:col-span-6 flex flex-col gap-1">
+                        <label class="text-sm font-semibold text-slate-600">Tanggal</label>
+                        <input type="date" x-model="newLogTanggal" required class="border border-slate-300 rounded-lg p-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition">
+                    </div>
+                    
+                    <div class="md:col-span-6 flex flex-col gap-1">
+                        <label class="text-sm font-semibold text-slate-600">Sesi Waktu</label>
+                        <select x-model="newLogWaktu" class="border border-slate-300 rounded-lg p-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition">
+                            <option value="pagi">🌅 Pagi</option>
+                            <option value="siang">☀️ Siang</option>
+                            <option value="malam">🌙 Malam</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-12 flex flex-col gap-2 mt-2">
+                        <label class="text-sm font-semibold text-slate-600 border-t border-slate-100 pt-4">Obat yang diminum:</label>
+                        <div class="flex flex-wrap gap-3">
+                            <template x-for="obat in daftarObat[newLogWaktu]" :key="obat">
+                                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-teal-50 hover:border-teal-300 transition select-none">
+                                    <input type="checkbox" :value="obat" x-model="newLogObat" class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500">
+                                    <span class="text-sm text-slate-700 font-medium" x-text="obat"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-12 mt-2 flex flex-col sm:flex-row gap-3">
+                        <button type="button" x-show="isEditing" @click="cancelEdit" class="w-full sm:w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-lg p-3 flex items-center justify-center gap-2 transition">
+                            <i class="ph-bold ph-x"></i> Batal
+                        </button>
+                        <button type="submit" :disabled="newLogObat.length === 0" :class="newLogObat.length === 0 ? 'bg-slate-300 cursor-not-allowed text-slate-500' : (isEditing ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-md')" class="w-full font-semibold rounded-lg p-3 flex items-center justify-center gap-2 transition flex-1">
+                            <i class="ph-bold" :class="isEditing ? 'ph-floppy-disk' : 'ph-check-square'"></i> 
+                            <span x-text="isEditing ? 'Simpan Perubahan' : 'Simpan Catatan Minum Obat'"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Toast Success Inline -->
+                <div x-show="showToast" x-transition class="mt-4 bg-green-50 border border-green-200 text-green-700 p-3 rounded-lg flex items-center gap-2 text-sm font-medium">
+                    <i class="ph-fill ph-check-circle text-lg"></i>
+                    <span x-text="toastMsg"></span>
+                </div>
+            </div>
+
+            <!-- Riwayat Catatan -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="ph-fill ph-clock-counter-clockwise text-teal-500"></i> Riwayat Anda
+                </h3>
+
+                <div x-show="logs.length === 0" class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                    <i class="ph-fill ph-empty text-4xl text-slate-300 mb-2"></i>
+                    <p class="text-slate-500 text-sm">Belum ada catatan. Silakan catat jadwal minum obat Anda di atas.</p>
+                </div>
+
+                <div class="space-y-3" x-show="logs.length > 0">
+                    <template x-for="log in logs" :key="log.id">
+                        <div class="flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
+                            <div class="flex items-center gap-4">
+                                <!-- Ikon Waktu -->
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center" :class="getWaktuColor(log.waktu).bg">
+                                    <i class="text-2xl" :class="getWaktuColor(log.waktu).icon"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-800 text-lg">
+                                        Sesi <span x-text="log.waktu.charAt(0).toUpperCase() + log.waktu.slice(1)"></span>
+                                    </p>
+                                    <p class="text-sm text-slate-500 flex items-center gap-1">
+                                        <i class="ph ph-calendar-blank"></i> <span x-text="formatDateStr(log.tanggal)"></span>
+                                        <span class="mx-1">•</span>
+                                        <i class="ph ph-clock"></i> Dicatat jam <span x-text="log.jamDicatat"></span>
+                                    </p>
+                                    <div class="flex flex-wrap gap-1.5 mt-2">
+                                        <template x-for="obat in log.obatDiminum" :key="obat">
+                                            <span class="inline-flex items-center gap-1 bg-teal-50 text-teal-700 text-[11px] font-bold px-2 py-0.5 rounded-full border border-teal-200">
+                                                <i class="ph-fill ph-pill"></i> <span x-text="obat"></span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button @click="editLog(log.id)" title="Edit catatan" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition">
+                                    <i class="ph-bold ph-pencil-simple"></i>
+                                </button>
+                                <button @click="deleteLog(log.id)" title="Hapus catatan" class="w-10 h-10 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="mt-12 text-center text-sm text-slate-400 border-t border-slate-200 pt-6">
+            <p>Semoga lekas sembuh, Ibu Dewi Maryati!</p>
+            <p class="text-xs mt-1">Sistem pencatatan menggunakan penyimpanan lokal peramban Anda.</p>
+        </footer>
+
+    </main>
+
+    <!-- Script Alpine dan Logika Calendar -->
+    <script>
+        // Logika Komponen Alpine JS
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('medicationApp', () => ({
+                // State utama
+                activeTab: 'jadwal', // Tab aktif bawaan
+                logs: [], // Menampung data riwayat
+                
+                // State form pencatatan
+                newLogTanggal: new Date().toISOString().split('T')[0],
+                newLogWaktu: 'pagi',
+                newLogObat: [],
+                showToast: false,
+                toastMsg: "Berhasil dicatat!",
+
+                // State Edit
+                isEditing: false,
+                editId: null,
+                ignoreWatch: false,
+
+                // Daftar referensi obat per sesi
+                daftarObat: {
+                    pagi: ['Cefadroxyl', 'Omeprazole', 'Domperidone', 'Parasetamol', 'Sucralfat Syr'],
+                    siang: ['Domperidone', 'Parasetamol', 'Sucralfat Syr'],
+                    malam: ['Cefadroxyl', 'Domperidone', 'Parasetamol', 'Sucralfat Syr']
+                },
+
+                // Dijalankan saat aplikasi diinisialisasi
+                init() {
+                    // Ambil dari localStorage jika ada
+                    const savedLogs = localStorage.getItem('jadwalMinumObatLogs');
+                    if (savedLogs) {
+                        this.logs = JSON.parse(savedLogs);
+                    }
+                    
+                    // Reset checklist saat sesi waktu diubah
+                    this.$watch('newLogWaktu', () => {
+                        if (!this.ignoreWatch) {
+                            this.newLogObat = [];
+                        }
+                    });
+                },
+
+                // Menambahkan atau mengedit catatan
+                saveRecord() {
+                    // Ceklis obat tidak boleh kosong
+                    if (!this.newLogTanggal || this.newLogObat.length === 0) return;
+                    
+                    if (this.isEditing) {
+                        // Proses Update Data
+                        const index = this.logs.findIndex(log => log.id === this.editId);
+                        if (index !== -1) {
+                            this.logs[index].tanggal = this.newLogTanggal;
+                            this.logs[index].waktu = this.newLogWaktu;
+                            this.logs[index].obatDiminum = [...this.newLogObat];
+                        }
+                        this.toastMsg = "Perubahan berhasil disimpan!";
+                    } else {
+                        // Proses Tambah Data Baru
+                        const now = new Date();
+                        const newEntry = {
+                            id: Date.now(),
+                            tanggal: this.newLogTanggal,
+                            waktu: this.newLogWaktu,
+                            obatDiminum: [...this.newLogObat], // Clone data checklist
+                            jamDicatat: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+                        };
+                        // Masukkan ke array di posisi paling atas (terbaru)
+                        this.logs.unshift(newEntry);
+                        this.toastMsg = "Berhasil dicatat!";
+                    }
+                    
+                    // Simpan ke localStorage
+                    this.saveLogs();
+                    
+                    // Reset form dan matikan mode edit
+                    this.resetForm();
+
+                    // Tampilkan notifikasi sukses
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 3000);
+                },
+
+                // Memulai mode edit
+                editLog(id) {
+                    const log = this.logs.find(l => l.id === id);
+                    if (!log) return;
+
+                    // Nyalakan ignoreWatch agar checklist obat tidak ter-reset otomatis
+                    this.ignoreWatch = true;
+                    
+                    this.isEditing = true;
+                    this.editId = log.id;
+                    this.newLogTanggal = log.tanggal;
+                    this.newLogWaktu = log.waktu;
+                    
+                    // Gunakan $nextTick agar DOM merender checklist waktu yang baru terlebih dahulu
+                    // sebelum kita mencentang obat yang ada di riwayat
+                    this.$nextTick(() => {
+                        this.newLogObat = [...log.obatDiminum];
+                        this.ignoreWatch = false; // Matikan ignoreWatch kembali
+                        
+                        // Scroll halaman ke atas agar user fokus pada form edit
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                },
+
+                // Membatalkan edit
+                cancelEdit() {
+                    this.resetForm();
+                },
+
+                // Mengembalikan form ke kondisi awal
+                resetForm() {
+                    this.ignoreWatch = true;
+                    this.isEditing = false;
+                    this.editId = null;
+                    this.newLogTanggal = new Date().toISOString().split('T')[0];
+                    this.newLogWaktu = 'pagi';
+                    
+                    this.$nextTick(() => {
+                        this.newLogObat = [];
+                        this.ignoreWatch = false;
+                    });
+                },
+
+                // Hapus catatan berdasarkan ID
+                deleteLog(id) {
+                    // Filter keluar log yang mau dihapus
+                    this.logs = this.logs.filter(log => log.id !== id);
+                    this.saveLogs();
+                },
+
+                // Simpan ke localstorage
+                saveLogs() {
+                    localStorage.setItem('jadwalMinumObatLogs', JSON.stringify(this.logs));
+                },
+
+                // Format tampilan tanggal riwayat
+                formatDateStr(dateString) {
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    return new Date(dateString).toLocaleDateString('id-ID', options);
+                },
+
+                // Helper class dan ikon untuk desain log
+                getWaktuColor(waktu) {
+                    if (waktu === 'pagi') return { bg: 'bg-amber-100 text-amber-600', icon: 'ph-fill ph-sun' };
+                    if (waktu === 'siang') return { bg: 'bg-sky-100 text-sky-600', icon: 'ph-fill ph-sun-horizon' };
+                    if (waktu === 'malam') return { bg: 'bg-indigo-100 text-indigo-600', icon: 'ph-fill ph-moon-stars' };
+                    return { bg: 'bg-slate-100 text-slate-600', icon: 'ph-fill ph-clock' };
+                },
+
+                // Fungsi Generate Google Calendar
+                addToCalendar(waktu) {
+                    let judul, detail, jamMulai, jamSelesai;
+                    
+                    // Format tanggal: YYYYMMDDTHHmmss (Format lokal Kalender)
+                    const hariIni = new Date();
+                    const yyyy = hariIni.getFullYear();
+                    const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
+                    const dd = String(hariIni.getDate()).padStart(2, '0');
+                    const tanggalDasar = `${yyyy}${mm}${dd}`;
+
+                    if (waktu === 'pagi') {
+                        judul = 'Minum Obat PAGI - Dewi Maryati';
+                        jamMulai = `${tanggalDasar}T060000`;
+                        jamSelesai = `${tanggalDasar}T090000`;
+                        detail = `Jadwal Pagi:\n- 06:00: Cefadroxyl & Omeprazole (Penting)\n- 06:45: Domperidone\n- 07:30: Parasetamol\n- 09:00: Sucralfat Sirup`;
+                    } 
+                    else if (waktu === 'siang') {
+                        judul = 'Minum Obat SIANG - Dewi Maryati';
+                        jamMulai = `${tanggalDasar}T114500`;
+                        jamSelesai = `${tanggalDasar}T140000`;
+                        detail = `Jadwal Siang:\n- 11:45: Domperidone\n- 12:30: Parasetamol\n- 14:00: Sucralfat Sirup`;
+                    } 
+                    else if (waktu === 'malam') {
+                        judul = 'Minum Obat MALAM - Dewi Maryati';
+                        jamMulai = `${tanggalDasar}T180000`;
+                        jamSelesai = `${tanggalDasar}T210000`;
+                        detail = `Jadwal Malam:\n- 18:00: Cefadroxyl (Penting - Tepat 12 Jam)\n- 18:45: Domperidone\n- 19:30: Parasetamol\n- 21:00: Sucralfat Sirup`;
+                    }
+
+                    // RRULE:FREQ=DAILY;COUNT=5 artinya akan berulang setiap hari selama 5 hari (jumlah kapsul antibiotik)
+                    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(judul)}&dates=${jamMulai}/${jamSelesai}&details=${encodeURIComponent(detail)}&recur=RRULE:FREQ=DAILY;COUNT=5`;
+                    
+                    // Buka di tab baru
+                    window.open(url, '_blank');
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
