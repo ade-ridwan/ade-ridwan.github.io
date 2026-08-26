@@ -461,11 +461,23 @@
 
             <!-- Riwayat Catatan -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
                     <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <i class="ph-fill ph-clock-counter-clockwise text-teal-500"></i> Riwayat Anda
                     </h3>
-                    <span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-md" x-text="logs.length + ' Catatan'"></span>
+                    
+                    <!-- Fitur Import/Export JSON -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <input type="file" accept=".json" class="hidden" x-ref="fileInput" @change="importData">
+                        
+                        <button @click="$refs.fileInput.click()" title="Import File JSON" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
+                            <i class="ph-bold ph-download-simple"></i> Import
+                        </button>
+                        <button @click="exportData" title="Download Data JSON" class="bg-teal-100 hover:bg-teal-200 text-teal-700 px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
+                            <i class="ph-bold ph-upload-simple"></i> Export
+                        </button>
+                        <span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-1.5 rounded-md border border-slate-200" x-text="logs.length + ' Catatan'"></span>
+                    </div>
                 </div>
 
                 <div x-show="logs.length === 0" class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
@@ -507,7 +519,7 @@
                                 <button @click="editLog(log.id)" title="Edit catatan" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition">
                                     <i class="ph-bold ph-pencil-simple"></i>
                                 </button>
-                                <button @click="deleteLog(log.id)" title="Hapus catatan" class="w-10 h-10 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition">
+                                <button @click="confirmDeletePrompt(log.id)" title="Hapus catatan" class="w-10 h-10 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition">
                                     <i class="ph-bold ph-trash"></i>
                                 </button>
                             </div>
@@ -520,12 +532,29 @@
 
         <footer class="mt-12 text-center text-sm text-slate-400 border-t border-slate-200 pt-6">
             <p>Semoga lekas sembuh, Ibu Dewi Maryati!</p>
-            <p class="text-xs mt-1">Sistem pencatatan terenkripsi di penyimpanan lokal peramban Anda.</p>
+            <p class="text-xs mt-1">Sistem pencatatan terenkripsi di penyimpanan cloud terpusat.</p>
         </footer>
+
+        <!-- Modal Konfirmasi Hapus -->
+        <div x-show="logToDelete !== null" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div @click.outside="logToDelete = null" class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+                <div class="flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mb-4">
+                        <i class="ph-fill ph-warning-circle text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Hapus Catatan?</h3>
+                    <p class="text-sm text-slate-500 mb-6">Apakah Anda yakin ingin menghapus catatan ini? Stok obat akan dikembalikan otomatis.</p>
+                    <div class="flex w-full gap-3">
+                        <button @click="logToDelete = null" class="flex-1 py-2.5 rounded-lg font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Batal</button>
+                        <button @click="executeDelete" class="flex-1 py-2.5 rounded-lg font-semibold bg-red-500 text-white hover:bg-red-600 transition shadow-sm">Hapus</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </main>
 
-    <!-- Script Alpine dan Logika -->
+    <!-- Script Alpine dan Logika Lokal -->
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('medicationApp', () => ({
@@ -534,7 +563,7 @@
                 
                 // Form States
                 newLogTanggal: new Date().toISOString().split('T')[0],
-                newLogJam: new Date().toTimeString().slice(0, 5), // Format HH:MM
+                newLogJam: new Date().toTimeString().slice(0, 5),
                 newLogWaktu: 'pagi',
                 newLogObat: [],
                 
@@ -544,6 +573,7 @@
                 isEditing: false,
                 editId: null,
                 ignoreWatch: false,
+                logToDelete: null,
 
                 // Referensi Obat per sesi
                 daftarObat: {
@@ -552,25 +582,7 @@
                     malam: ['Cefadroxyl', 'Domperidone', 'Parasetamol', 'Sucralfat Syr']
                 },
 
-                // Konfigurasi Stok Awal (Resep Total)
-                totalStokAwal: {
-                    'Cefadroxyl': 10,
-                    'Sucralfat Syr': 30, // 30 sendok (karena 1x minum = 2 sendok, total 15x minum)
-                    'Omeprazole': 10,
-                    'Domperidone': 10,
-                    'Parasetamol': 10
-                },
-
-                // Dosis per sekali minum
-                dosisPerMinum: {
-                    'Cefadroxyl': 1,
-                    'Sucralfat Syr': 2, // Mengurangi 2 sendok setiap kali diminum
-                    'Omeprazole': 1,
-                    'Domperidone': 1,
-                    'Parasetamol': 1
-                },
-
-                // Satuan nama obat
+                // TAMBAHKAN KODE INI UNTUK KONFIGURASI STOK & DOSIS
                 satuanObat: {
                     'Cefadroxyl': 'Kapsul',
                     'Sucralfat Syr': 'Sendok',
@@ -578,19 +590,46 @@
                     'Domperidone': 'Tablet',
                     'Parasetamol': 'Tablet'
                 },
+                
+                totalStokAwal: {
+                    'Cefadroxyl': 10,
+                    'Sucralfat Syr': 30, // 30 sendok obat
+                    'Omeprazole': 10,
+                    'Domperidone': 10,
+                    'Parasetamol': 10
+                },
+                
+                dosisPerMinum: {
+                    'Cefadroxyl': 1,
+                    'Sucralfat Syr': 2, // Minum 2 sendok
+                    'Omeprazole': 1,
+                    'Domperidone': 1,
+                    'Parasetamol': 1
+                },
+                // AKHIR DARI TAMBAHAN KODE
 
                 init() {
-                    const savedLogs = localStorage.getItem('jadwalMinumObatLogsV2');
+                    // Muat data dari Local Storage
+                    const savedLogs = localStorage.getItem('medicationLogs');
                     if (savedLogs) {
-                        this.logs = JSON.parse(savedLogs);
+                        try {
+                            this.logs = JSON.parse(savedLogs);
+                        } catch(e) {
+                            console.error("Gagal memuat riwayat", e);
+                        }
                     }
-                    
+
                     // Reset checklist jika ganti sesi (kecuali saat mode edit)
                     this.$watch('newLogWaktu', () => {
                         if (!this.ignoreWatch) {
                             this.newLogObat = [];
                         }
                     });
+
+                    // Auto-save setiap kali variabel logs berubah
+                    this.$watch('logs', (newLogs) => {
+                        localStorage.setItem('medicationLogs', JSON.stringify(newLogs));
+                    }, { deep: true });
                 },
 
                 // Menghitung sisa stok dinamis dari history
@@ -618,7 +657,7 @@
                 // Sistem Prediksi (Dihitung Otomatis dari Log Terakhir)
                 get prediksi() {
                     if (this.logs.length === 0) return { tersedia: false };
-
+                    
                     // Ambil log yang benar-benar terakhir diminum (bukan terakhir diinput)
                     const lastLog = this.sortedLogs[0]; 
                     
@@ -657,32 +696,30 @@
                     };
                 },
 
-                // Simpan Data Log
+                // Simpan Data Log ke Local Storage
                 saveRecord() {
                     if (!this.newLogTanggal || !this.newLogJam || this.newLogObat.length === 0) return;
                     
+                    const docId = this.isEditing ? this.editId : Date.now().toString();
+                    
+                    const logData = {
+                        id: docId,
+                        tanggal: this.newLogTanggal,
+                        jamMinum: this.newLogJam,
+                        waktu: this.newLogWaktu,
+                        obatDiminum: [...this.newLogObat]
+                    };
+
                     if (this.isEditing) {
-                        const index = this.logs.findIndex(log => log.id === this.editId);
+                        const index = this.logs.findIndex(l => l.id === this.editId);
                         if (index !== -1) {
-                            this.logs[index].tanggal = this.newLogTanggal;
-                            this.logs[index].jamMinum = this.newLogJam; // Jam Spesifik
-                            this.logs[index].waktu = this.newLogWaktu;
-                            this.logs[index].obatDiminum = [...this.newLogObat];
+                            this.logs[index] = logData;
                         }
-                        this.toastMsg = "Perubahan berhasil disimpan!";
                     } else {
-                        const newEntry = {
-                            id: Date.now(),
-                            tanggal: this.newLogTanggal,
-                            jamMinum: this.newLogJam, // Jam Spesifik
-                            waktu: this.newLogWaktu,
-                            obatDiminum: [...this.newLogObat]
-                        };
-                        this.logs.unshift(newEntry);
-                        this.toastMsg = "Berhasil dicatat!";
+                        this.logs.push(logData);
                     }
                     
-                    this.saveLogs();
+                    this.toastMsg = this.isEditing ? "Perubahan berhasil disimpan!" : "Berhasil dicatat!";
                     this.resetForm();
 
                     this.showToast = true;
@@ -725,15 +762,69 @@
                     });
                 },
 
-                deleteLog(id) {
-                    if(confirm("Apakah Anda yakin ingin menghapus catatan ini? Stok obat akan dikembalikan otomatis.")) {
-                        this.logs = this.logs.filter(log => log.id !== id);
-                        this.saveLogs();
-                    }
+                confirmDeletePrompt(id) {
+                    this.logToDelete = id;
                 },
 
-                saveLogs() {
-                    localStorage.setItem('jadwalMinumObatLogsV2', JSON.stringify(this.logs));
+                executeDelete() {
+                    if (!this.logToDelete) return;
+                    
+                    this.logs = this.logs.filter(l => l.id !== this.logToDelete);
+                    
+                    this.logToDelete = null;
+                    this.toastMsg = "Catatan berhasil dihapus!";
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 3000);
+                },
+
+                // Fungsi Export ke JSON
+                exportData() {
+                    if (this.logs.length === 0) {
+                        alert("Belum ada data untuk diekspor.");
+                        return;
+                    }
+                    const dataStr = JSON.stringify(this.logs, null, 2);
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Riwayat_Obat_DewiMaryati_${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    this.toastMsg = "Data berhasil diekspor!";
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 3000);
+                },
+
+                // Fungsi Import dari JSON
+                importData(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const importedData = JSON.parse(e.target.result);
+                            if (Array.isArray(importedData)) {
+                                this.logs = importedData;
+                                this.toastMsg = "Data berhasil diimpor!";
+                                this.showToast = true;
+                                setTimeout(() => this.showToast = false, 3000);
+                            } else {
+                                alert("Format file JSON tidak valid. Pastikan itu adalah file riwayat obat.");
+                            }
+                        } catch (error) {
+                            console.error("Gagal import:", error);
+                            alert("Gagal membaca file JSON!");
+                        }
+                        // Reset input file agar bisa import file yang sama lagi
+                        this.$refs.fileInput.value = '';
+                    };
+                    reader.readAsText(file);
                 },
 
                 formatDateStr(dateString) {
