@@ -367,6 +367,44 @@
                 <h2 class="text-2xl font-bold text-slate-800">Catat Minum Obat</h2>
             </div>
             
+            <!-- Panel Status Hari Ini (Belum Diminum) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-rose-50 px-6 py-4 border-b border-rose-100 flex items-center gap-3">
+                    <i class="ph-fill ph-warning-circle text-2xl text-rose-500"></i>
+                    <div>
+                        <h3 class="text-lg font-bold text-rose-900">Belum Diminum Hari Ini</h3>
+                        <p class="text-xs text-rose-700 font-medium" x-text="formatDateStr(statusHariIni.tanggal)"></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                    <template x-for="sesi in ['pagi', 'siang', 'malam']" :key="sesi">
+                        <div class="p-5">
+                            <p class="font-bold text-slate-700 capitalize mb-3 flex items-center gap-2">
+                                <i class="ph-fill text-xl" :class="getWaktuColor(sesi).icon + (sesi === 'pagi' ? ' text-amber-500' : (sesi === 'siang' ? ' text-sky-500' : ' text-indigo-500'))"></i>
+                                Sesi <span x-text="sesi"></span>
+                            </p>
+                            
+                            <template x-if="statusHariIni[sesi].belum.length > 0">
+                                <ul class="space-y-2">
+                                    <template x-for="obat in statusHariIni[sesi].belum" :key="obat">
+                                        <li class="text-sm text-slate-600 flex items-start gap-2">
+                                            <i class="ph-bold ph-x text-rose-500 mt-0.5"></i> 
+                                            <span class="font-medium" x-text="obat"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+                            
+                            <template x-if="statusHariIni[sesi].belum.length === 0">
+                                <div class="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
+                                    <i class="ph-fill ph-check-circle text-lg"></i> Sudah Tuntas
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
             <!-- Panel Prediksi Cerdas -->
             <template x-if="prediksi.tersedia">
                 <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
@@ -694,6 +732,40 @@
                         jamDepan: String(prediksiDate.getHours()).padStart(2, '0') + ':' + String(prediksiDate.getMinutes()).padStart(2, '0'),
                         cefaJamDepan: cefaJamDepan
                     };
+                },
+
+                // Status Obat Hari Ini (Mengecek obat yang belum diminum khusus hari ini)
+                get statusHariIni() {
+                    const today = new Date();
+                    const yyyy = today.getFullYear();
+                    const mm = String(today.getMonth() + 1).padStart(2, '0');
+                    const dd = String(today.getDate()).padStart(2, '0');
+                    const hariIni = `${yyyy}-${mm}-${dd}`; 
+
+                    const logsHariIni = this.logs.filter(l => l.tanggal === hariIni);
+                    
+                    const result = {
+                        tanggal: hariIni,
+                        pagi: { belum: [] },
+                        siang: { belum: [] },
+                        malam: { belum: [] }
+                    };
+
+                    ['pagi', 'siang', 'malam'].forEach(sesi => {
+                        // Ambil semua log hari ini khusus sesi yang sedang di-loop
+                        const logsSesi = logsHariIni.filter(l => l.waktu === sesi);
+                        let obatDiminumSesi = new Set();
+                        
+                        // Kumpulkan semua nama obat yang sudah dicentang
+                        logsSesi.forEach(log => {
+                            log.obatDiminum.forEach(o => obatDiminumSesi.add(o));
+                        });
+                        
+                        // Cek dari resep dokter (daftarObat), filter yang BELUM dicentang & STOK MASIH ADA
+                        result[sesi].belum = this.daftarObat[sesi].filter(o => !obatDiminumSesi.has(o) && this.getStok(o) > 0);
+                    });
+                    
+                    return result;
                 },
 
                 // Simpan Data Log ke Local Storage
