@@ -50,6 +50,14 @@
                     <p class="text-xl font-semibold flex items-center justify-center md:justify-end gap-2">
                         <i class="ph ph-calendar-check"></i> 26 Agustus 2026
                     </p>
+                    <div class="mt-3 pt-3 border-t border-white/20">
+                        <p class="text-sm text-teal-100 mb-1">Hari Ini</p>
+                        <p class="text-base font-semibold flex items-center justify-center md:justify-end gap-2">
+                            <i class="ph ph-clock"></i>
+                            <span x-text="formatDateStr(today)"></span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded font-mono" x-text="nowStr"></span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -107,11 +115,13 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- PAGI -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative transition hover:shadow-md">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative transition hover:shadow-md"
+                         :class="sesiSekarang === 'pagi' ? 'ring-2 ring-amber-400 shadow-md' : ''">
                         <div class="bg-amber-100 p-4 border-b border-amber-200 flex justify-between items-center">
                             <h3 class="font-bold text-amber-800 text-lg flex items-center gap-2">
                                 <i class="ph-fill ph-sun text-2xl text-amber-500"></i> PAGI
                             </h3>
+                            <span x-show="sesiSekarang === 'pagi'" class="bg-white/80 text-amber-800 text-[10px] font-bold px-2 py-1 rounded-full border border-amber-300 ml-auto mr-2 animate-pulse">SEKARANG</span>
                             <button @click="addToCalendar('pagi')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1 transition-colors">
                                 <i class="ph-bold ph-calendar-plus"></i> Kalender
                             </button>
@@ -155,11 +165,13 @@
                     </div>
 
                     <!-- SIANG -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition hover:shadow-md">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition hover:shadow-md"
+                         :class="sesiSekarang === 'siang' ? 'ring-2 ring-sky-400 shadow-md' : ''">
                         <div class="bg-sky-100 p-4 border-b border-sky-200 flex justify-between items-center">
                             <h3 class="font-bold text-sky-800 text-lg flex items-center gap-2">
                                 <i class="ph-fill ph-sun-horizon text-2xl text-sky-500"></i> SIANG
                             </h3>
+                            <span x-show="sesiSekarang === 'siang'" class="bg-white/80 text-sky-800 text-[10px] font-bold px-2 py-1 rounded-full border border-sky-300 ml-auto mr-2 animate-pulse">SEKARANG</span>
                             <button @click="addToCalendar('siang')" class="bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1 transition-colors">
                                 <i class="ph-bold ph-calendar-plus"></i> Kalender
                             </button>
@@ -196,11 +208,13 @@
                     </div>
 
                     <!-- MALAM -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition hover:shadow-md">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition hover:shadow-md"
+                         :class="sesiSekarang === 'malam' ? 'ring-2 ring-indigo-400 shadow-md' : ''">
                         <div class="bg-indigo-100 p-4 border-b border-indigo-200 flex justify-between items-center">
                             <h3 class="font-bold text-indigo-800 text-lg flex items-center gap-2">
                                 <i class="ph-fill ph-moon-stars text-2xl text-indigo-500"></i> MALAM
                             </h3>
+                            <span x-show="sesiSekarang === 'malam'" class="bg-white/80 text-indigo-800 text-[10px] font-bold px-2 py-1 rounded-full border border-indigo-300 ml-auto mr-2 animate-pulse">SEKARANG</span>
                             <button @click="addToCalendar('malam')" class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1 transition-colors">
                                 <i class="ph-bold ph-calendar-plus"></i> Kalender
                             </button>
@@ -365,6 +379,42 @@
                 <i class="ph-fill ph-notebook text-3xl text-teal-600"></i>
                 <h2 class="text-2xl font-bold text-slate-800">Catat Minum Obat</h2>
             </div>
+
+            <!-- PEMILIH TANGGAL (filter harian) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col lg:flex-row lg:items-center gap-3">
+                <div class="flex items-center gap-2 flex-1">
+                    <button @click="geserTanggal(-1)" title="Hari sebelumnya" class="w-10 h-10 shrink-0 rounded-full bg-slate-100 hover:bg-teal-100 text-slate-600 hover:text-teal-700 flex items-center justify-center transition">
+                        <i class="ph-bold ph-caret-left"></i>
+                    </button>
+
+                    <div class="flex-1 min-w-0 text-center">
+                        <p class="font-bold text-slate-800 leading-tight truncate" x-text="formatDateStr(selectedDate)"></p>
+                        <p class="text-xs mt-0.5 font-semibold"
+                           :class="isHariIni ? 'text-emerald-600' : (selectedDate > today ? 'text-blue-600' : 'text-amber-600')"
+                           x-text="labelRelatifTanggal"></p>
+                    </div>
+
+                    <button @click="geserTanggal(1)" title="Hari berikutnya" class="w-10 h-10 shrink-0 rounded-full bg-slate-100 hover:bg-teal-100 text-slate-600 hover:text-teal-700 flex items-center justify-center transition">
+                        <i class="ph-bold ph-caret-right"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="date" x-model="selectedDate" :max="maxTanggalPilih"
+                           class="border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition w-full lg:w-auto">
+                    <button @click="pilihHariIni" :disabled="isHariIni"
+                            :class="isHariIni ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm'"
+                            class="px-3 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition whitespace-nowrap">
+                        <i class="ph-bold ph-calendar-dot"></i> Hari Ini
+                    </button>
+                </div>
+            </div>
+
+            <!-- Peringatan jika sedang melihat tanggal selain hari ini -->
+            <div x-show="!isHariIni" x-transition class="bg-amber-50 border border-amber-300 text-amber-800 rounded-xl p-3 flex items-center gap-2 text-sm font-medium">
+                <i class="ph-fill ph-warning text-lg shrink-0"></i>
+                <span>Anda sedang melihat data tanggal lain. Pencatatan baru akan disimpan pada <strong x-text="formatDateStr(selectedDate)"></strong>.</span>
+            </div>
             
             <!-- PANEL DASHBOARD: CHECKLIST HARI INI (SEMUA SESI) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-2">
@@ -372,12 +422,12 @@
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-list-checks text-2xl text-teal-400"></i>
                         <div>
-                            <h3 class="text-lg font-bold text-white">Checklist Belum Diminum Hari Ini</h3>
+                            <h3 class="text-lg font-bold text-white">Checklist Belum Diminum <span x-text="isHariIni ? 'Hari Ini' : 'Tanggal Ini'"></span></h3>
                             <p class="text-xs text-slate-300 font-medium">Klik pada obat untuk mencatatnya dengan cepat.</p>
                         </div>
                     </div>
                     <div class="bg-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-600 flex items-center gap-2 w-max">
-                        <i class="ph-fill ph-calendar-blank"></i> <span x-text="formatDateStr(new Date().toISOString().split('T')[0])"></span>
+                        <i class="ph-fill ph-calendar-blank"></i> <span x-text="formatDateStr(selectedDate)"></span>
                     </div>
                 </div>
                 
@@ -457,7 +507,7 @@
                     <i class="ph-fill ph-magic-wand text-2xl text-teal-600 animate-pulse"></i>
                     <div>
                         <h3 class="text-lg font-bold text-teal-900">Live Tracker: Sesi <span class="capitalize" x-text="newLogWaktu"></span></h3>
-                        <p class="text-xs text-teal-700 font-medium">Berdasarkan data hari ini (<span x-text="formatDateStr(new Date().toISOString().split('T')[0])"></span>)</p>
+                        <p class="text-xs text-teal-700 font-medium">Berdasarkan data tanggal <span x-text="formatDateStr(selectedDate)"></span></p>
                     </div>
                 </div>
 
@@ -539,7 +589,7 @@
             </div>
 
             <!-- Form Tambah Catatan -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-visible">
+            <div id="form-pencatatan" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-visible scroll-mt-4">
                 <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <i class="ph-fill" :class="isEditing ? 'ph-pencil-simple text-blue-500' : 'ph-plus-circle text-teal-500'"></i>
                     <span x-text="isEditing ? 'Edit Catatan' : 'Form Pencatatan'"></span>
@@ -649,6 +699,14 @@
                     
                     <!-- Fitur Import/Export JSON -->
                     <div class="flex items-center gap-2 flex-wrap">
+                        <button @click="filterRiwayatTanggal = !filterRiwayatTanggal"
+                                :title="filterRiwayatTanggal ? 'Tampilkan semua tanggal' : 'Tampilkan hanya tanggal terpilih'"
+                                :class="filterRiwayatTanggal ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
+                            <i class="ph-bold" :class="filterRiwayatTanggal ? 'ph-funnel-simple' : 'ph-list'"></i>
+                            <span x-text="filterRiwayatTanggal ? 'Tanggal Terpilih' : 'Semua Tanggal'"></span>
+                        </button>
+
                         <input type="file" accept=".json" class="hidden" x-ref="fileInput" @change="importData">
                         
                         <button @click="$refs.fileInput.click()" title="Import File JSON" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
@@ -657,17 +715,17 @@
                         <button @click="exportData" title="Download Data JSON" class="bg-teal-100 hover:bg-teal-200 text-teal-700 px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition">
                             <i class="ph-bold ph-upload-simple"></i> Export
                         </button>
-                        <span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-1.5 rounded-md border border-slate-200" x-text="logs.length + ' Catatan'"></span>
+                        <span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-1.5 rounded-md border border-slate-200" x-text="filteredLogs.length + ' / ' + logs.length + ' Catatan'"></span>
                     </div>
                 </div>
 
-                <div x-show="logs.length === 0" class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                <div x-show="filteredLogs.length === 0" class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
                     <i class="ph-fill ph-empty text-4xl text-slate-300 mb-2"></i>
-                    <p class="text-slate-500 text-sm">Belum ada catatan aktivitas.</p>
+                    <p class="text-slate-500 text-sm" x-text="logs.length === 0 ? 'Belum ada catatan aktivitas.' : 'Tidak ada catatan pada ' + formatDateStr(selectedDate) + '.'"></p>
                 </div>
 
-                <div class="space-y-3" x-show="logs.length > 0">
-                    <template x-for="log in sortedLogs" :key="log.id">
+                <div class="space-y-3" x-show="filteredLogs.length > 0">
+                    <template x-for="log in filteredLogs" :key="log.id">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition gap-4">
                             <div class="flex items-start sm:items-center gap-4">
                                 <div class="w-12 h-12 shrink-0 rounded-full flex items-center justify-center" :class="getWaktuColor(log.waktu).bg">
@@ -749,10 +807,17 @@
             Alpine.data('medicationApp', () => ({
                 activeTab: 'jadwal', 
                 logs: [], 
+
+                // Tanggal & Waktu (reaktif, ikut berganti saat hari berganti)
+                today: '',            // tanggal hari ini (waktu lokal), diperbarui otomatis
+                selectedDate: '',     // tanggal yang sedang dilihat / difilter
+                nowStr: '',           // jam berjalan HH:MM
+                filterRiwayatTanggal: true,
+                _timer: null,
                 
                 // Form States
-                newLogTanggal: new Date().toISOString().split('T')[0],
-                newLogJam: new Date().toTimeString().slice(0, 5),
+                newLogTanggal: '',
+                newLogJam: '',
                 newLogWaktu: 'pagi',
                 newLogObat: [],
                 newLogSudahMakan: false,
@@ -809,6 +874,21 @@
                 },
 
                 init() {
+                    // Inisialisasi tanggal berbasis waktu LOKAL (bukan UTC)
+                    this.today = this.localDateStr(new Date());
+                    this.selectedDate = this.today;
+                    this.newLogTanggal = this.today;
+                    this.newLogJam = this.localTimeStr(new Date());
+                    this.nowStr = this.newLogJam;
+                    this.newLogWaktu = this.sesiDariJam(new Date());
+
+                    // Jam berjalan + deteksi pergantian hari (tiap 20 detik)
+                    this._timer = setInterval(() => this.tickWaktu(), 20000);
+                    // Cek juga saat tab kembali aktif (mis. HP baru dibangunkan)
+                    document.addEventListener('visibilitychange', () => {
+                        if (!document.hidden) this.tickWaktu();
+                    });
+
                     // Muat data dari Local Storage
                     const savedLogs = localStorage.getItem('medicationLogs');
                     if (savedLogs) {
@@ -818,6 +898,21 @@
                             console.error("Gagal memuat riwayat", e);
                         }
                     }
+
+                    // Ganti tanggal terpilih -> form ikut, checklist form direset
+                    this.$watch('selectedDate', (val) => {
+                        if (this.isEditing) return;
+                        this.newLogTanggal = val;
+                        this.newLogObat = [];
+                        this.newLogSudahMakan = false;
+                        this.newLogJamMakan = '';
+                    });
+
+                    // Ganti tanggal langsung dari form -> panel ikut berpindah
+                    this.$watch('newLogTanggal', (val) => {
+                        if (this.isEditing || !val) return;
+                        this.selectedDate = val;
+                    });
 
                     // Reset checklist jika ganti sesi (kecuali saat mode edit)
                     this.$watch('newLogWaktu', () => {
@@ -841,6 +936,100 @@
                     }, { deep: true });
                 },
 
+                // ===== Helper Tanggal & Waktu (semua berbasis waktu LOKAL) =====
+                localDateStr(d) {
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                },
+
+                localTimeStr(d) {
+                    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                },
+
+                // Tentukan sesi (pagi/siang/malam) dari sebuah waktu
+                sesiDariJam(d) {
+                    const jam = d.getHours();
+                    if (jam >= 4 && jam < 11) return 'pagi';
+                    if (jam >= 11 && jam < 17) return 'siang';
+                    return 'malam';
+                },
+
+                // Dipanggil berkala: perbarui jam & tangani pergantian hari
+                tickWaktu() {
+                    const now = new Date();
+                    this.nowStr = this.localTimeStr(now);
+
+                    const tanggalSekarang = this.localDateStr(now);
+                    if (tanggalSekarang === this.today) return;
+
+                    // HARI BERGANTI
+                    const sedangLihatHariIni = this.selectedDate === this.today;
+                    const tanggalLama = this.today;
+                    this.today = tanggalSekarang;
+
+                    if (sedangLihatHariIni) {
+                        // Ikut pindah ke hari baru: checklist, live tracker & form ter-reset
+                        this.selectedDate = tanggalSekarang;
+                        if (!this.isEditing) {
+                            this.newLogTanggal = tanggalSekarang;
+                            this.newLogJam = this.nowStr;
+                            this.newLogWaktu = this.sesiDariJam(now);
+                        }
+                        this.toastMsg = `Hari berganti ke ${this.formatDateStr(tanggalSekarang)}. Checklist direset.`;
+                    } else {
+                        this.toastMsg = `Hari berganti (${this.formatDateStr(tanggalLama)} → ${this.formatDateStr(tanggalSekarang)}).`;
+                    }
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 5000);
+                },
+
+                get isHariIni() {
+                    return this.selectedDate === this.today;
+                },
+
+                // Sesi yang sedang berjalan saat ini (untuk highlight timeline)
+                get sesiSekarang() {
+                    const jam = parseInt((this.nowStr || '00:00').split(':')[0], 10);
+                    if (jam >= 4 && jam < 11) return 'pagi';
+                    if (jam >= 11 && jam < 17) return 'siang';
+                    return 'malam';
+                },
+
+                get labelRelatifTanggal() {
+                    const selisih = this.selisihHari(this.selectedDate, this.today);
+                    if (selisih === 0) return 'Hari ini';
+                    if (selisih === -1) return 'Kemarin';
+                    if (selisih === 1) return 'Besok';
+                    if (selisih < 0) return `${Math.abs(selisih)} hari lalu`;
+                    return `${selisih} hari ke depan`;
+                },
+
+                // Batas maksimal pemilihan tanggal (besok, agar bisa persiapan)
+                get maxTanggalPilih() {
+                    return this.tambahHari(this.today, 1);
+                },
+
+                selisihHari(a, b) {
+                    const da = new Date(`${a}T00:00:00`);
+                    const db = new Date(`${b}T00:00:00`);
+                    return Math.round((da - db) / 86400000);
+                },
+
+                tambahHari(tanggalStr, jumlah) {
+                    const d = new Date(`${tanggalStr}T00:00:00`);
+                    d.setDate(d.getDate() + jumlah);
+                    return this.localDateStr(d);
+                },
+
+                geserTanggal(jumlah) {
+                    const target = this.tambahHari(this.selectedDate, jumlah);
+                    if (this.selisihHari(target, this.today) > 1) return; // maksimal H+1
+                    this.selectedDate = target;
+                },
+
+                pilihHariIni() {
+                    this.selectedDate = this.today;
+                },
+
                 // Menghitung sisa stok dinamis dari history
                 getStok(namaObat) {
                     let jumlahTerpakai = 0;
@@ -857,6 +1046,12 @@
                     return this.waktuMakanObat[namaObat] || { posisi: 'sesudah', keterangan: 'Sesudah makan' };
                 },
 
+                // Riwayat yang tampil: ikut filter tanggal terpilih bila aktif
+                get filteredLogs() {
+                    if (!this.filterRiwayatTanggal) return this.sortedLogs;
+                    return this.sortedLogs.filter(l => l.tanggal === this.selectedDate);
+                },
+
                 // Getter riwayat log (Diurutkan paling baru di atas)
                 get sortedLogs() {
                     return [...this.logs].sort((a, b) => {
@@ -866,13 +1061,13 @@
                     });
                 },
 
-                // Dasbor Status Hari Ini (User-friendly checklist per sesi)
+                // Dasbor Status per tanggal terpilih (User-friendly checklist per sesi)
                 get statusHariIni() {
-                    const today = new Date().toISOString().split('T')[0];
-                    const logsToday = this.logs.filter(l => l.tanggal === today);
+                    const tanggal = this.selectedDate;
+                    const logsToday = this.logs.filter(l => l.tanggal === tanggal);
                     
                     const result = {
-                        tanggal: today,
+                        tanggal: tanggal,
                         sesi: {}
                     };
                     
@@ -911,19 +1106,13 @@
                 quickLog(sesi, namaObat) {
                     this.activeTab = 'catatan';
                     this.newLogWaktu = sesi;
+                    this.newLogTanggal = this.selectedDate; // ikut tanggal yang sedang dilihat
                     
                     // Gunakan nextTick agar watch newLogWaktu membersihkan data lama dulu
                     this.$nextTick(() => {
                         this.newLogObat = [namaObat]; // Pilih otomatis obat tsb
-                        this.newLogJam = new Date().toTimeString().slice(0, 5); // Jam aksi saat ini
-                        
-                        // Gulir otomatis ke arah form agar user fokus
-                        const formElem = document.getElementById('form-pencatatan');
-                        if(formElem) { formElem.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-                        
-                        // Mainkan efek highlight di form
-                        formElem.classList.add('ring-4', 'ring-teal-200', 'transition-all', 'duration-500');
-                        setTimeout(() => formElem.classList.remove('ring-4', 'ring-teal-200'), 1500);
+                        this.newLogJam = this.localTimeStr(new Date()); // Jam aksi saat ini
+                        this.sorotForm('ring-teal-200');
                     });
                 },
 
@@ -931,26 +1120,31 @@
                 quickLogMakan(sesi) {
                     this.activeTab = 'catatan';
                     this.newLogWaktu = sesi;
+                    this.newLogTanggal = this.selectedDate; // ikut tanggal yang sedang dilihat
                     
                     this.$nextTick(() => {
                         this.newLogSudahMakan = true;
-                        this.newLogJam = new Date().toTimeString().slice(0, 5); // Jam aksi
+                        this.newLogJam = this.localTimeStr(new Date()); // Jam aksi
                         this.newLogJamMakan = this.newLogJam; // Asumsi selesai makan jam tsb
-                        
-                        const formElem = document.getElementById('form-pencatatan');
-                        if(formElem) { formElem.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-                        
-                        formElem.classList.add('ring-4', 'ring-amber-200', 'transition-all', 'duration-500');
-                        setTimeout(() => formElem.classList.remove('ring-4', 'ring-amber-200'), 1500);
+                        this.sorotForm('ring-amber-200');
                     });
+                },
+
+                // Gulir ke form pencatatan + efek sorot
+                sorotForm(ringClass) {
+                    const formElem = document.getElementById('form-pencatatan');
+                    if (!formElem) return;
+                    formElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    formElem.classList.add('ring-4', ringClass, 'transition-all', 'duration-500');
+                    setTimeout(() => formElem.classList.remove('ring-4', ringClass), 1500);
                 },
 
                 // Sistem Tracker Interaktif berdasarkan sesi saat ini (hari ini)
                 get liveTracker() {
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = this.selectedDate;
                     const sesiTarget = this.newLogWaktu;
                     
-                    // Ambil log HANYA untuk hari ini dan sesi yang sedang dilihat di form
+                    // Ambil log HANYA untuk tanggal terpilih dan sesi yang sedang dilihat di form
                     const logsSesiIni = this.logs.filter(l => l.tanggal === today && l.waktu === sesiTarget);
                     
                     let obatDiminumSet = new Set();
@@ -1066,6 +1260,8 @@
                     }
                     
                     this.toastMsg = this.isEditing ? "Perubahan berhasil disimpan!" : "Aktivitas berhasil dicatat!";
+                    // Pindahkan tampilan ke tanggal catatan yang baru disimpan
+                    this.selectedDate = logData.tanggal;
                     this.resetForm();
 
                     this.showToast = true;
@@ -1079,6 +1275,7 @@
                     this.ignoreWatch = true;
                     this.isEditing = true;
                     this.editId = log.id;
+                    this.selectedDate = log.tanggal; // panel ikut tanggal catatan yang diedit
                     this.newLogTanggal = log.tanggal;
                     this.newLogJam = log.jamMinum;
                     this.newLogWaktu = log.waktu;
@@ -1101,8 +1298,9 @@
                     this.isEditing = false;
                     this.editId = null;
                     
-                    // Pertahankan tanggal dan sesi, tapi reset jam ke waktu sekarang
-                    this.newLogJam = new Date().toTimeString().slice(0, 5);
+                    // Pertahankan tanggal terpilih dan sesi, tapi reset jam ke waktu sekarang
+                    this.newLogTanggal = this.selectedDate;
+                    this.newLogJam = this.localTimeStr(new Date());
                     this.newLogSudahMakan = false;
                     this.newLogJamMakan = '';
                     
@@ -1139,7 +1337,7 @@
                     
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `Riwayat_Obat_DewiMaryati_${new Date().toISOString().split('T')[0]}.json`;
+                    a.download = `Riwayat_Obat_DewiMaryati_${this.localDateStr(new Date())}.json`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -1177,8 +1375,14 @@
                 },
 
                 formatDateStr(dateString) {
+                    if (!dateString) return '-';
                     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                    return new Date(dateString).toLocaleDateString('id-ID', options);
+                    // Tambahkan T00:00:00 agar diparsing sebagai waktu lokal, bukan UTC
+                    const d = /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+                        ? new Date(`${dateString}T00:00:00`)
+                        : new Date(dateString);
+                    if (isNaN(d)) return dateString;
+                    return d.toLocaleDateString('id-ID', options);
                 },
 
                 getWaktuColor(waktu) {
@@ -1190,11 +1394,7 @@
 
                 addToCalendar(waktu) {
                     let judul, detail, jamMulai, jamSelesai;
-                    const hariIni = new Date();
-                    const yyyy = hariIni.getFullYear();
-                    const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
-                    const dd = String(hariIni.getDate()).padStart(2, '0');
-                    const tanggalDasar = `${yyyy}${mm}${dd}`;
+                    const tanggalDasar = this.localDateStr(new Date()).replace(/-/g, '');
 
                     if (waktu === 'pagi') {
                         judul = 'Minum Obat PAGI - Dewi Maryati';
