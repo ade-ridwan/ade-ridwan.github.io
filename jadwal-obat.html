@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Minum Obat - Amah Dewi Maryati</title>
+    <title>Jadwal Minum Obat - Dewi Maryati</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
@@ -24,10 +24,7 @@
             70% { border-color: rgba(59, 130, 246, 1); box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
             100% { border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
-        /* Hide elements before Alpine loads */
-        [x-cloak] { 
-            display: none !important; 
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 <body x-data="medicationApp()" class="text-slate-800 antialiased pb-12">
@@ -42,7 +39,7 @@
                         Jadwal Minum Obat
                     </h1>
                     <div class="mt-4 bg-teal-700/50 rounded-lg p-4 inline-block border border-teal-500">
-                        <p class="text-2xl font-bold text-white">AMAH DEWI MARYATI</p>
+                        <p class="text-2xl font-bold text-white">DEWI MARYATI</p>
                         <p class="text-teal-50 mt-1 flex items-center gap-2 italic">
                             Semoga lekas sembuh dan sehat kembali
                         </p>
@@ -74,7 +71,6 @@
                 class="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-all relative">
                 <i class="ph-fill ph-pencil-simple text-lg"></i>
                 Catatan Minum
-                <!-- Indikator ada log -->
                 <span x-show="logs.length > 0" class="absolute top-2 right-4 flex h-3 w-3">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
@@ -98,7 +94,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-blue-900 mb-1">Integrasi Google Calendar</h3>
-                        <p class="text-sm text-blue-700">Tekan tombol "Tambah ke Kalender" pada setiap waktu (Pagi/Siang/Malam) di bawah untuk memasukkan pengingat jadwal obat ke dalam ponsel pintar Anda. Pengaturan bawaan diatur selama 5 hari berturut-turut.</p>
+                        <p class="text-sm text-blue-700">Tekan tombol "Tambah ke Kalender" pada setiap waktu (Pagi/Siang/Malam) di bawah untuk memasukkan pengingat jadwal obat ke dalam ponsel pintar Anda.</p>
                     </div>
                 </div>
             </section>
@@ -250,11 +246,11 @@
                 </div>
             </section>
 
-            <!-- Bagian Detail Obat -->
+            <!-- Bagian Detail & Stok Obat -->
             <section class="mt-12">
                 <div class="flex items-center gap-3 mb-6">
                     <i class="ph-fill ph-pill text-3xl text-teal-600"></i>
-                    <h2 class="text-2xl font-bold text-slate-800">Detail & Informasi Obat</h2>
+                    <h2 class="text-2xl font-bold text-slate-800">Detail & Stok Obat</h2>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -263,11 +259,14 @@
                         <div class="h-40 overflow-hidden relative bg-red-50 flex items-center justify-center">
                             <img src="/assets/obat/Cefadroxyl.png" onerror="this.src='https://placehold.co/400x400/fee2e2/991b1b?text=Cefadroxyl'" alt="Cefadroxyl" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
                             <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide animate-pulse">Antibiotik - Habiskan!</span>
+                            <!-- Sisa Stok Indicator -->
+                            <div class="absolute bottom-0 w-full bg-red-900/80 text-white text-center py-1.5 font-bold text-sm backdrop-blur-sm">
+                                Sisa Stok: <span x-text="getStok('Cefadroxyl')"></span> / 10 Kapsul
+                            </div>
                         </div>
                         <div class="p-5">
                             <h3 class="font-bold text-xl text-slate-800 mb-1">Cefadroxyl 500mg</h3>
-                            <p class="text-sm text-slate-500 mb-4">Bentuk: Kapsul (Jumlah: 10)</p>
-                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100 mt-3">
                                 <p class="font-bold text-teal-700 text-lg mb-2">2 x 1 Kapsul</p>
                                 <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
                                     <li><strong>1 Jam Sebelum Makan</strong></li>
@@ -280,13 +279,15 @@
 
                     <!-- Obat 2: Sucralfat -->
                     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                        <div class="h-40 overflow-hidden bg-pink-50 flex items-center justify-center">
+                        <div class="h-40 overflow-hidden bg-pink-50 flex items-center justify-center relative">
                             <img src="/assets/obat/sucifalfat.png" onerror="this.src='https://placehold.co/400x400/fdf2f8/9d174d?text=Sucralfat'" alt="Sucralfat" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                            <div class="absolute bottom-0 w-full bg-slate-900/70 text-white text-center py-1.5 font-bold text-sm backdrop-blur-sm">
+                                Sisa Stok: <span x-text="getStok('Sucralfat Syr')"></span> / 30 Sendok
+                            </div>
                         </div>
                         <div class="p-5">
                             <h3 class="font-bold text-xl text-slate-800 mb-1">Sucralfat Syr</h3>
-                            <p class="text-sm text-slate-500 mb-4">Bentuk: Sirup (Jumlah: 1 Botol)</p>
-                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100 mt-3">
                                 <p class="font-bold text-teal-700 text-lg mb-2">3 x 2 Sendok Obat</p>
                                 <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
                                     <li><strong>2 Jam Sesudah Makan</strong></li>
@@ -298,13 +299,15 @@
 
                     <!-- Obat 3: Omeprazole -->
                     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                        <div class="h-40 overflow-hidden bg-purple-50 flex items-center justify-center">
+                        <div class="h-40 overflow-hidden bg-purple-50 flex items-center justify-center relative">
                             <img src="/assets/obat/omeparazole.png" onerror="this.src='https://placehold.co/400x400/faf5ff/6b21a8?text=Omeprazole'" alt="Omeprazole" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                            <div class="absolute bottom-0 w-full bg-slate-900/70 text-white text-center py-1.5 font-bold text-sm backdrop-blur-sm">
+                                Sisa Stok: <span x-text="getStok('Omeprazole')"></span> / 10 Kapsul
+                            </div>
                         </div>
                         <div class="p-5">
                             <h3 class="font-bold text-xl text-slate-800 mb-1">Omeprazole 20mg</h3>
-                            <p class="text-sm text-slate-500 mb-4">Bentuk: Kapsul/Tablet (Jumlah: 10)</p>
-                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100 mt-3">
                                 <p class="font-bold text-teal-700 text-lg mb-2">1 x 1 Kapsul</p>
                                 <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
                                     <li><strong>1 Jam Sebelum Makan</strong></li>
@@ -317,11 +320,13 @@
                     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                         <div class="h-40 overflow-hidden bg-blue-50 flex items-center justify-center relative">
                             <img src="/assets/obat/domperidone.png" onerror="this.src='https://placehold.co/400x400/eff6ff/1e40af?text=Domperidone'" alt="Domperidone" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                            <div class="absolute bottom-0 w-full bg-slate-900/70 text-white text-center py-1.5 font-bold text-sm backdrop-blur-sm">
+                                Sisa Stok: <span x-text="getStok('Domperidone')"></span> / 10 Tablet
+                            </div>
                         </div>
                         <div class="p-5">
                             <h3 class="font-bold text-xl text-slate-800 mb-1">Domperidone 10mg</h3>
-                            <p class="text-sm text-slate-500 mb-4">Bentuk: Tablet (Jumlah: 10)</p>
-                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100 mt-3">
                                 <p class="font-bold text-teal-700 text-lg mb-2">3 x 1 Tablet</p>
                                 <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
                                     <li><strong>15 Menit Sebelum Makan</strong></li>
@@ -334,11 +339,13 @@
                     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                         <div class="h-40 overflow-hidden bg-green-50 flex items-center justify-center relative">
                             <img src="/assets/obat/paracetamol.png" onerror="this.src='https://placehold.co/400x400/f0fdf4/166534?text=Parasetamol'" alt="Parasetamol" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
+                            <div class="absolute bottom-0 w-full bg-slate-900/70 text-white text-center py-1.5 font-bold text-sm backdrop-blur-sm">
+                                Sisa Stok: <span x-text="getStok('Parasetamol')"></span> / 10 Tablet
+                            </div>
                         </div>
                         <div class="p-5">
                             <h3 class="font-bold text-xl text-slate-800 mb-1">Parasetamol</h3>
-                            <p class="text-sm text-slate-500 mb-4">Bentuk: Tablet (Jumlah: 10)</p>
-                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                            <div class="bg-slate-50 rounded-lg p-3 border border-slate-100 mt-3">
                                 <p class="font-bold text-teal-700 text-lg mb-2">3 x 1 Tablet</p>
                                 <ul class="text-sm space-y-1 text-slate-600 list-disc list-inside">
                                     <li><strong>Sesudah Makan</strong></li>
@@ -359,7 +366,27 @@
                 <i class="ph-fill ph-notebook text-3xl text-teal-600"></i>
                 <h2 class="text-2xl font-bold text-slate-800">Catat Minum Obat</h2>
             </div>
-            <p class="text-slate-600 text-sm mb-6">Tandai obat yang sudah Anda minum agar tidak lupa. Data ini tersimpan di perangkat Anda (Browser).</p>
+            
+            <!-- Panel Prediksi Cerdas -->
+            <template x-if="prediksi.tersedia">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-indigo-600 p-3 rounded-full text-white shadow-md">
+                            <i class="ph-fill ph-magic-wand text-2xl animate-pulse"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-indigo-900 mb-1">Prediksi Jadwal Selanjutnya</h3>
+                            <p class="text-sm text-indigo-700">Berdasarkan catatan terakhir, Anda diprediksi minum obat <strong>Sesi <span x-text="prediksi.sesiDepan" class="capitalize"></span></strong> pada sekitar jam <strong><span x-text="prediksi.jamDepan"></span></strong>.</p>
+                        </div>
+                    </div>
+                    <template x-if="prediksi.cefaJamDepan">
+                        <div class="bg-red-50 border border-red-200 px-4 py-2 rounded-lg text-sm shrink-0">
+                            <span class="block text-red-800 font-bold mb-1"><i class="ph-fill ph-warning-circle"></i> Wajib Cefadroxyl!</span>
+                            <span class="text-red-600 font-medium" x-text="prediksi.cefaJamDepan"></span>
+                        </div>
+                    </template>
+                </div>
+            </template>
 
             <!-- Form Tambah Catatan -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -369,27 +396,46 @@
                 </h3>
                 
                 <form @submit.prevent="saveRecord" class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div class="md:col-span-6 flex flex-col gap-1">
+                    <!-- Tanggal -->
+                    <div class="md:col-span-4 flex flex-col gap-1">
                         <label class="text-sm font-semibold text-slate-600">Tanggal</label>
                         <input type="date" x-model="newLogTanggal" required class="border border-slate-300 rounded-lg p-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition">
                     </div>
+
+                    <!-- Jam Spesifik -->
+                    <div class="md:col-span-4 flex flex-col gap-1">
+                        <label class="text-sm font-semibold text-slate-600">Jam Diminum</label>
+                        <input type="time" x-model="newLogJam" required class="border border-slate-300 rounded-lg p-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition">
+                    </div>
                     
-                    <div class="md:col-span-6 flex flex-col gap-1">
+                    <!-- Sesi Waktu -->
+                    <div class="md:col-span-4 flex flex-col gap-1">
                         <label class="text-sm font-semibold text-slate-600">Sesi Waktu</label>
-                        <select x-model="newLogWaktu" class="border border-slate-300 rounded-lg p-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition">
+                        <select x-model="newLogWaktu" class="border border-slate-300 rounded-lg p-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition bg-white">
                             <option value="pagi">🌅 Pagi</option>
                             <option value="siang">☀️ Siang</option>
                             <option value="malam">🌙 Malam</option>
                         </select>
                     </div>
 
+                    <!-- Checklist Dinamis Obat -->
                     <div class="md:col-span-12 flex flex-col gap-2 mt-2">
-                        <label class="text-sm font-semibold text-slate-600 border-t border-slate-100 pt-4">Obat yang diminum:</label>
+                        <label class="text-sm font-semibold text-slate-600 border-t border-slate-100 pt-4">Pilih obat yang sudah diminum:</label>
                         <div class="flex flex-wrap gap-3">
                             <template x-for="obat in daftarObat[newLogWaktu]" :key="obat">
-                                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-teal-50 hover:border-teal-300 transition select-none">
-                                    <input type="checkbox" :value="obat" x-model="newLogObat" class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500">
-                                    <span class="text-sm text-slate-700 font-medium" x-text="obat"></span>
+                                <label 
+                                    class="flex items-center gap-2 border px-3 py-2 rounded-lg cursor-pointer transition select-none"
+                                    :class="getStok(obat) === 0 ? 'bg-red-50 border-red-200 opacity-70' : (newLogObat.includes(obat) ? 'bg-teal-50 border-teal-500 ring-1 ring-teal-500' : 'bg-slate-50 border-slate-200 hover:bg-teal-50 hover:border-teal-300')">
+                                    
+                                    <!-- Jika stok 0 dan tidak sedang dalam mode edit (atau obat tsb tdk ada dlm checklist edit), disable checkbox -->
+                                    <input type="checkbox" :value="obat" x-model="newLogObat" 
+                                           class="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
+                                           :disabled="getStok(obat) === 0 && !newLogObat.includes(obat)">
+                                    
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium" :class="getStok(obat) === 0 ? 'text-red-700 line-through' : 'text-slate-700'" x-text="obat"></span>
+                                        <span class="text-[10px]" :class="getStok(obat) === 0 ? 'text-red-500 font-bold' : 'text-slate-500'" x-text="getStok(obat) === 0 ? 'Habis' : 'Sisa: ' + getStok(obat) + ' ' + satuanObat[obat]"></span>
+                                    </div>
                                 </label>
                             </template>
                         </div>
@@ -415,9 +461,12 @@
 
             <!-- Riwayat Catatan -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="ph-fill ph-clock-counter-clockwise text-teal-500"></i> Riwayat Anda
-                </h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-clock-counter-clockwise text-teal-500"></i> Riwayat Anda
+                    </h3>
+                    <span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-md" x-text="logs.length + ' Catatan'"></span>
+                </div>
 
                 <div x-show="logs.length === 0" class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
                     <i class="ph-fill ph-empty text-4xl text-slate-300 mb-2"></i>
@@ -425,21 +474,25 @@
                 </div>
 
                 <div class="space-y-3" x-show="logs.length > 0">
-                    <template x-for="log in logs" :key="log.id">
-                        <div class="flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
-                            <div class="flex items-center gap-4">
+                    <!-- Gunakan logika sorting agar riwayat terbaru di atas (berdasarkan tanggal & jam) -->
+                    <template x-for="log in sortedLogs" :key="log.id">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition gap-4">
+                            <div class="flex items-start sm:items-center gap-4">
                                 <!-- Ikon Waktu -->
-                                <div class="w-12 h-12 rounded-full flex items-center justify-center" :class="getWaktuColor(log.waktu).bg">
+                                <div class="w-12 h-12 shrink-0 rounded-full flex items-center justify-center" :class="getWaktuColor(log.waktu).bg">
                                     <i class="text-2xl" :class="getWaktuColor(log.waktu).icon"></i>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-slate-800 text-lg">
-                                        Sesi <span x-text="log.waktu.charAt(0).toUpperCase() + log.waktu.slice(1)"></span>
-                                    </p>
-                                    <p class="text-sm text-slate-500 flex items-center gap-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <p class="font-bold text-slate-800 text-lg">
+                                            Sesi <span x-text="log.waktu.charAt(0).toUpperCase() + log.waktu.slice(1)"></span>
+                                        </p>
+                                        <span class="bg-slate-800 text-white text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                                            <i class="ph-bold ph-clock"></i> <span x-text="log.jamMinum"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-slate-500 flex items-center gap-1 mt-0.5">
                                         <i class="ph ph-calendar-blank"></i> <span x-text="formatDateStr(log.tanggal)"></span>
-                                        <span class="mx-1">•</span>
-                                        <i class="ph ph-clock"></i> Dicatat jam <span x-text="log.jamDicatat"></span>
                                     </p>
                                     <div class="flex flex-wrap gap-1.5 mt-2">
                                         <template x-for="obat in log.obatDiminum" :key="obat">
@@ -450,7 +503,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                                 <button @click="editLog(log.id)" title="Edit catatan" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition">
                                     <i class="ph-bold ph-pencil-simple"></i>
                                 </button>
@@ -467,48 +520,72 @@
 
         <footer class="mt-12 text-center text-sm text-slate-400 border-t border-slate-200 pt-6">
             <p>Semoga lekas sembuh, Ibu Dewi Maryati!</p>
-            <p class="text-xs mt-1">Sistem pencatatan menggunakan penyimpanan lokal peramban Anda.</p>
+            <p class="text-xs mt-1">Sistem pencatatan terenkripsi di penyimpanan lokal peramban Anda.</p>
         </footer>
 
     </main>
 
-    <!-- Script Alpine dan Logika Calendar -->
+    <!-- Script Alpine dan Logika -->
     <script>
-        // Logika Komponen Alpine JS
         document.addEventListener('alpine:init', () => {
             Alpine.data('medicationApp', () => ({
-                // State utama
-                activeTab: 'jadwal', // Tab aktif bawaan
-                logs: [], // Menampung data riwayat
+                activeTab: 'jadwal', 
+                logs: [], 
                 
-                // State form pencatatan
+                // Form States
                 newLogTanggal: new Date().toISOString().split('T')[0],
+                newLogJam: new Date().toTimeString().slice(0, 5), // Format HH:MM
                 newLogWaktu: 'pagi',
                 newLogObat: [],
+                
+                // UI States
                 showToast: false,
                 toastMsg: "Berhasil dicatat!",
-
-                // State Edit
                 isEditing: false,
                 editId: null,
                 ignoreWatch: false,
 
-                // Daftar referensi obat per sesi
+                // Referensi Obat per sesi
                 daftarObat: {
                     pagi: ['Cefadroxyl', 'Omeprazole', 'Domperidone', 'Parasetamol', 'Sucralfat Syr'],
                     siang: ['Domperidone', 'Parasetamol', 'Sucralfat Syr'],
                     malam: ['Cefadroxyl', 'Domperidone', 'Parasetamol', 'Sucralfat Syr']
                 },
 
-                // Dijalankan saat aplikasi diinisialisasi
+                // Konfigurasi Stok Awal (Resep Total)
+                totalStokAwal: {
+                    'Cefadroxyl': 10,
+                    'Sucralfat Syr': 30, // 30 sendok (karena 1x minum = 2 sendok, total 15x minum)
+                    'Omeprazole': 10,
+                    'Domperidone': 10,
+                    'Parasetamol': 10
+                },
+
+                // Dosis per sekali minum
+                dosisPerMinum: {
+                    'Cefadroxyl': 1,
+                    'Sucralfat Syr': 2, // Mengurangi 2 sendok setiap kali diminum
+                    'Omeprazole': 1,
+                    'Domperidone': 1,
+                    'Parasetamol': 1
+                },
+
+                // Satuan nama obat
+                satuanObat: {
+                    'Cefadroxyl': 'Kapsul',
+                    'Sucralfat Syr': 'Sendok',
+                    'Omeprazole': 'Kapsul',
+                    'Domperidone': 'Tablet',
+                    'Parasetamol': 'Tablet'
+                },
+
                 init() {
-                    // Ambil dari localStorage jika ada
-                    const savedLogs = localStorage.getItem('jadwalMinumObatLogs');
+                    const savedLogs = localStorage.getItem('jadwalMinumObatLogsV2');
                     if (savedLogs) {
                         this.logs = JSON.parse(savedLogs);
                     }
                     
-                    // Reset checklist saat sesi waktu diubah
+                    // Reset checklist jika ganti sesi (kecuali saat mode edit)
                     this.$watch('newLogWaktu', () => {
                         if (!this.ignoreWatch) {
                             this.newLogObat = [];
@@ -516,81 +593,130 @@
                     });
                 },
 
-                // Menambahkan atau mengedit catatan
+                // Menghitung sisa stok dinamis dari history
+                getStok(namaObat) {
+                    let jumlahTerpakai = 0;
+                    this.logs.forEach(log => {
+                        if (log.obatDiminum.includes(namaObat)) {
+                            // Hitung pemakaian sesuai dosisnya, jika tidak ada default 1
+                            jumlahTerpakai += (this.dosisPerMinum[namaObat] || 1);
+                        }
+                    });
+                    const sisa = this.totalStokAwal[namaObat] - jumlahTerpakai;
+                    return sisa > 0 ? sisa : 0;
+                },
+
+                // Getter riwayat log (Diurutkan paling baru di atas)
+                get sortedLogs() {
+                    return [...this.logs].sort((a, b) => {
+                        const dateA = new Date(`${a.tanggal}T${a.jamMinum}`);
+                        const dateB = new Date(`${b.tanggal}T${b.jamMinum}`);
+                        return dateB - dateA;
+                    });
+                },
+
+                // Sistem Prediksi (Dihitung Otomatis dari Log Terakhir)
+                get prediksi() {
+                    if (this.logs.length === 0) return { tersedia: false };
+
+                    // Ambil log yang benar-benar terakhir diminum (bukan terakhir diinput)
+                    const lastLog = this.sortedLogs[0]; 
+                    
+                    // Prediksi Sesi Berikutnya
+                    let nextSesi = '';
+                    let prediksiDate = new Date(`${lastLog.tanggal}T${lastLog.jamMinum}`);
+                    
+                    if (lastLog.waktu === 'pagi') { 
+                        nextSesi = 'siang'; 
+                        prediksiDate.setHours(prediksiDate.getHours() + 5); 
+                    } else if (lastLog.waktu === 'siang') { 
+                        nextSesi = 'malam'; 
+                        prediksiDate.setHours(prediksiDate.getHours() + 6); 
+                    } else if (lastLog.waktu === 'malam') { 
+                        nextSesi = 'pagi'; 
+                        prediksiDate.setDate(prediksiDate.getDate() + 1); 
+                        prediksiDate.setHours(6, 0, 0); // Besok pagi asumsi jam 6
+                    }
+
+                    // Prediksi Khusus Cefadroxyl (Antibiotik 12 Jam)
+                    let cefaJamDepan = null;
+                    const lastCefaLog = this.sortedLogs.find(l => l.obatDiminum.includes('Cefadroxyl'));
+                    if (lastCefaLog && this.getStok('Cefadroxyl') > 0) {
+                        const cefaTime = new Date(`${lastCefaLog.tanggal}T${lastCefaLog.jamMinum}`);
+                        cefaTime.setHours(cefaTime.getHours() + 12);
+                        
+                        const formatOptions = { weekday: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
+                        cefaJamDepan = cefaTime.toLocaleDateString('id-ID', formatOptions).replace(/\./g, ':');
+                    }
+
+                    return {
+                        tersedia: true,
+                        sesiDepan: nextSesi,
+                        jamDepan: String(prediksiDate.getHours()).padStart(2, '0') + ':' + String(prediksiDate.getMinutes()).padStart(2, '0'),
+                        cefaJamDepan: cefaJamDepan
+                    };
+                },
+
+                // Simpan Data Log
                 saveRecord() {
-                    // Ceklis obat tidak boleh kosong
-                    if (!this.newLogTanggal || this.newLogObat.length === 0) return;
+                    if (!this.newLogTanggal || !this.newLogJam || this.newLogObat.length === 0) return;
                     
                     if (this.isEditing) {
-                        // Proses Update Data
                         const index = this.logs.findIndex(log => log.id === this.editId);
                         if (index !== -1) {
                             this.logs[index].tanggal = this.newLogTanggal;
+                            this.logs[index].jamMinum = this.newLogJam; // Jam Spesifik
                             this.logs[index].waktu = this.newLogWaktu;
                             this.logs[index].obatDiminum = [...this.newLogObat];
                         }
                         this.toastMsg = "Perubahan berhasil disimpan!";
                     } else {
-                        // Proses Tambah Data Baru
-                        const now = new Date();
                         const newEntry = {
                             id: Date.now(),
                             tanggal: this.newLogTanggal,
+                            jamMinum: this.newLogJam, // Jam Spesifik
                             waktu: this.newLogWaktu,
-                            obatDiminum: [...this.newLogObat], // Clone data checklist
-                            jamDicatat: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+                            obatDiminum: [...this.newLogObat]
                         };
-                        // Masukkan ke array di posisi paling atas (terbaru)
                         this.logs.unshift(newEntry);
                         this.toastMsg = "Berhasil dicatat!";
                     }
                     
-                    // Simpan ke localStorage
                     this.saveLogs();
-                    
-                    // Reset form dan matikan mode edit
                     this.resetForm();
 
-                    // Tampilkan notifikasi sukses
                     this.showToast = true;
                     setTimeout(() => this.showToast = false, 3000);
                 },
 
-                // Memulai mode edit
                 editLog(id) {
                     const log = this.logs.find(l => l.id === id);
                     if (!log) return;
 
-                    // Nyalakan ignoreWatch agar checklist obat tidak ter-reset otomatis
                     this.ignoreWatch = true;
-                    
                     this.isEditing = true;
                     this.editId = log.id;
                     this.newLogTanggal = log.tanggal;
+                    this.newLogJam = log.jamMinum;
                     this.newLogWaktu = log.waktu;
                     
-                    // Gunakan $nextTick agar DOM merender checklist waktu yang baru terlebih dahulu
-                    // sebelum kita mencentang obat yang ada di riwayat
                     this.$nextTick(() => {
                         this.newLogObat = [...log.obatDiminum];
-                        this.ignoreWatch = false; // Matikan ignoreWatch kembali
-                        
-                        // Scroll halaman ke atas agar user fokus pada form edit
+                        this.ignoreWatch = false; 
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     });
                 },
 
-                // Membatalkan edit
                 cancelEdit() {
                     this.resetForm();
                 },
 
-                // Mengembalikan form ke kondisi awal
                 resetForm() {
                     this.ignoreWatch = true;
                     this.isEditing = false;
                     this.editId = null;
                     this.newLogTanggal = new Date().toISOString().split('T')[0];
+                    this.newLogJam = new Date().toTimeString().slice(0, 5);
                     this.newLogWaktu = 'pagi';
                     
                     this.$nextTick(() => {
@@ -599,25 +725,22 @@
                     });
                 },
 
-                // Hapus catatan berdasarkan ID
                 deleteLog(id) {
-                    // Filter keluar log yang mau dihapus
-                    this.logs = this.logs.filter(log => log.id !== id);
-                    this.saveLogs();
+                    if(confirm("Apakah Anda yakin ingin menghapus catatan ini? Stok obat akan dikembalikan otomatis.")) {
+                        this.logs = this.logs.filter(log => log.id !== id);
+                        this.saveLogs();
+                    }
                 },
 
-                // Simpan ke localstorage
                 saveLogs() {
-                    localStorage.setItem('jadwalMinumObatLogs', JSON.stringify(this.logs));
+                    localStorage.setItem('jadwalMinumObatLogsV2', JSON.stringify(this.logs));
                 },
 
-                // Format tampilan tanggal riwayat
                 formatDateStr(dateString) {
                     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                     return new Date(dateString).toLocaleDateString('id-ID', options);
                 },
 
-                // Helper class dan ikon untuk desain log
                 getWaktuColor(waktu) {
                     if (waktu === 'pagi') return { bg: 'bg-amber-100 text-amber-600', icon: 'ph-fill ph-sun' };
                     if (waktu === 'siang') return { bg: 'bg-sky-100 text-sky-600', icon: 'ph-fill ph-sun-horizon' };
@@ -625,11 +748,8 @@
                     return { bg: 'bg-slate-100 text-slate-600', icon: 'ph-fill ph-clock' };
                 },
 
-                // Fungsi Generate Google Calendar
                 addToCalendar(waktu) {
                     let judul, detail, jamMulai, jamSelesai;
-                    
-                    // Format tanggal: YYYYMMDDTHHmmss (Format lokal Kalender)
                     const hariIni = new Date();
                     const yyyy = hariIni.getFullYear();
                     const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
@@ -637,28 +757,25 @@
                     const tanggalDasar = `${yyyy}${mm}${dd}`;
 
                     if (waktu === 'pagi') {
-                        judul = 'Minum Obat PAGI - Amah Dewi Maryati';
+                        judul = 'Minum Obat PAGI - Dewi Maryati';
                         jamMulai = `${tanggalDasar}T060000`;
                         jamSelesai = `${tanggalDasar}T090000`;
                         detail = `Jadwal Pagi:\n- 06:00: Cefadroxyl & Omeprazole (Penting)\n- 06:45: Domperidone\n- 07:30: Parasetamol\n- 09:00: Sucralfat Sirup`;
                     } 
                     else if (waktu === 'siang') {
-                        judul = 'Minum Obat SIANG - Amah Dewi Maryati';
+                        judul = 'Minum Obat SIANG - Dewi Maryati';
                         jamMulai = `${tanggalDasar}T114500`;
                         jamSelesai = `${tanggalDasar}T140000`;
                         detail = `Jadwal Siang:\n- 11:45: Domperidone\n- 12:30: Parasetamol\n- 14:00: Sucralfat Sirup`;
                     } 
                     else if (waktu === 'malam') {
-                        judul = 'Minum Obat MALAM - Amah Dewi Maryati';
+                        judul = 'Minum Obat MALAM - Dewi Maryati';
                         jamMulai = `${tanggalDasar}T180000`;
                         jamSelesai = `${tanggalDasar}T210000`;
                         detail = `Jadwal Malam:\n- 18:00: Cefadroxyl (Penting - Tepat 12 Jam)\n- 18:45: Domperidone\n- 19:30: Parasetamol\n- 21:00: Sucralfat Sirup`;
                     }
 
-                    // RRULE:FREQ=DAILY;COUNT=5 artinya akan berulang setiap hari selama 5 hari (jumlah kapsul antibiotik)
                     const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(judul)}&dates=${jamMulai}/${jamSelesai}&details=${encodeURIComponent(detail)}&recur=RRULE:FREQ=DAILY;COUNT=5`;
-                    
-                    // Buka di tab baru
                     window.open(url, '_blank');
                 }
             }));
